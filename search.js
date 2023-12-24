@@ -56,8 +56,69 @@ function loadMoreResults() {
 	}
 }
 
+function getResultId(result) {
+	return result.querySelector("[data-asset-id]").getAttribute("data-asset-id");
+}
+
+function getNumRatings(result) {
+	return Number(result.querySelector(".RatingStars-count").textContent.match(/\d+/))
+}
+
+function getStarRating(result) {
+	return Number(result.querySelector(".RatingStars").querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
+}
+
 var results = [];
 var resultIds = new Set();
+
+function readNewCards() {
+	var resultItems = document.getElementsByClassName("ResultsGrid-card");
+	var gotNewResult = false;
+	for (result of resultItems) {
+		resultId = getResultId(result);
+		if (!resultIds.has(resultId))
+		{
+			gotNewResult = true;
+			console.log("num ratings " + getNumRatings(result));
+			console.log("rating " + getStarRating(result));
+			resultIds.add(resultId);
+			results.push(result.cloneNode(true));
+		}
+	}
+	return gotNewResult;
+}
+
+function sortedByNumRatings() {
+	return results.sort(function(a, b) {
+		var ar = getNumRatings(a);
+		var br = getNumRatings(b);
+		if (ar > br)
+			return -1;
+		if (ar < br)
+			return 1;
+		var as = getStarRating(a);
+		var bs = getStarRating(b);
+		if (as > bs)
+			return -1;
+		if (as < bs)
+			return 1;
+		return 0;
+	});
+}
+
+function applyAcorns() {
+	if (!readNewCards())
+		return;
+	
+	console.log("# results: " + results.length);
+	
+	// rebuild results grid from saved results
+	var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
+	resultsGrid.textContent = '';
+	for (result of sortedByNumRatings()) {
+		resultsGrid.appendChild(result);
+	}
+}
 
 applyAcorns();
 loadMoreResults();
@@ -74,62 +135,6 @@ var resultsObsever = new MutationObserver(function(mutations) {
 	});
 var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
 resultsObsever.observe(resultsGrid, { childList: true });
-
-function getResultId(result) {
-	return result.querySelector("[data-asset-id]").getAttribute("data-asset-id");
-}
-
-function getNumRatings(result) {
-	return Number(result.querySelector(".RatingStars-count").textContent.match(/\d+/))
-}
-
-function getStarRating(result) {
-	return Number(result.querySelector(".RatingStars").querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
-}
-
-function applyAcorns() {
-	console.log("applying");
-	var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
-	var resultItems = document.getElementsByClassName("ResultsGrid-card");
-	var gotNewResult = false;
-	for (result of resultItems) {
-		resultId = getResultId(result);
-		if (!resultIds.has(resultId))
-		{
-			gotNewResult = true;
-			console.log("num ratings " + getNumRatings(result));
-			console.log("rating " + getStarRating(result));
-			resultIds.add(resultId);
-			results.push(result.cloneNode(true));
-		}
-	}
-	if (!gotNewResult)
-		return;
-	
-	// rebuild results grid from saved results
-	resultsGrid.textContent = '';
-	
-	sorted_results = results.sort(function(a, b) {
-		var ar = getNumRatings(a);
-		var br = getNumRatings(b);
-		if (ar > br)
-			return -1;
-		if (ar < br)
-			return 1;
-		var as = getStarRating(a);
-		var bs = getStarRating(b);
-		if (as > bs)
-			return -1;
-		if (as < bs)
-			return 1;
-		return 0;
-	});
-	
-	for (result of sorted_results) {
-		resultsGrid.appendChild(result);
-	}
-	console.log("# results: " + results.length);
-}
 
 }
 
