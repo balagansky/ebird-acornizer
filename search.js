@@ -71,6 +71,8 @@ function getStarRating(result) {
 var results = [];
 var resultIds = new Set();
 
+//<a href="https://macaulaylibrary.org/asset/611860447" target="_blank" class="newTabMenu" style="left: 251px; top: 113.031px;">Open link in new tab</a>
+
 function readNewCards() {
 	var resultItems = document.getElementsByClassName("ResultsGrid-card");
 	var gotNewResult = false;
@@ -79,10 +81,11 @@ function readNewCards() {
 		if (!resultIds.has(resultId))
 		{
 			gotNewResult = true;
-			console.log("num ratings " + getNumRatings(result));
-			console.log("rating " + getStarRating(result));
+			//console.log("num ratings " + getNumRatings(result));
+			//console.log("rating " + getStarRating(result));
 			resultIds.add(resultId);
-			results.push(result.cloneNode(true));
+			// NOTE: cloning breaks site code. Have to manipulate in place.
+			results.push(result);
 		}
 	}
 	return gotNewResult;
@@ -106,6 +109,12 @@ function sortedByNumRatings() {
 	});
 }
 
+function applyOrdering(containerElem, orderedElems) {
+	for (elem of orderedElems.toReversed()) {
+		containerElem.insertBefore(elem, containerElem.firstChild);
+	}
+}
+
 function applyAcorns() {
 	if (!readNewCards())
 		return;
@@ -114,10 +123,7 @@ function applyAcorns() {
 	
 	// rebuild results grid from saved results
 	var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
-	resultsGrid.textContent = '';
-	for (result of sortedByNumRatings()) {
-		resultsGrid.appendChild(result);
-	}
+	applyOrdering(resultsGrid, sortedByNumRatings());
 }
 
 applyAcorns();

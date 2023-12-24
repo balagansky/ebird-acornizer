@@ -3,6 +3,7 @@ Ideas:
 * Custom tags - config page to add custom tags that will appear in search filters and manage media pages
 * Sort by number of ratings (then by quality)
 * Sort by custom ranking
+ + similar UI to: https://jsfiddle.net/dq8a0ttt/
 
 Implementation
 * Store mapping from asset id to:
