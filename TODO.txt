@@ -1,3 +1,6 @@
+Limitations:
+* prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
+
 Ideas:
 * Favorite - filter and/or search option (Best Quality, Favorites first)
 * Custom tags - config page to add custom tags that will appear in search filters and manage media pages

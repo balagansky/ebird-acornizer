@@ -46,11 +46,18 @@ var paginationObserver = new MutationObserver(function(mutations) {
 	});
 paginationObserver.observe(pagination, { childList: true });
 
+var results = [];
+var resultIds = new Set();
+
 function loadMoreResults() {
 	for (pagChild of pagination.childNodes) {
 		if (pagChild.type == "button") {
-			console.log("loading more results");
-			pagChild.click();
+			if (results.length > 500) {
+				console.log("Result limit reached.");
+			} else {
+				console.log("loading more results");
+				pagChild.click();
+			}
 			break;
 		}
 	}
@@ -68,8 +75,15 @@ function getStarRating(result) {
 	return Number(result.querySelector(".RatingStars").querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
 }
 
-var results = [];
-var resultIds = new Set();
+function getAcornRating(result) {
+	var favBox = result.getElementsByClassName("favCheck")[0];
+	if (favBox && favBox.checked) {
+		console.log("acorn");
+		return 1;
+	} else {
+		return 0;
+	}
+}
 
 //<a href="https://macaulaylibrary.org/asset/611860447" target="_blank" class="newTabMenu" style="left: 251px; top: 113.031px;">Open link in new tab</a>
 
@@ -77,7 +91,7 @@ function readNewCards() {
 	var resultItems = document.getElementsByClassName("ResultsGrid-card");
 	var gotNewResult = false;
 	for (result of resultItems) {
-		resultId = getResultId(result);
+		var resultId = getResultId(result);
 		if (!resultIds.has(resultId))
 		{
 			gotNewResult = true;
@@ -86,13 +100,31 @@ function readNewCards() {
 			resultIds.add(resultId);
 			// NOTE: cloning breaks site code. Have to manipulate in place.
 			results.push(result);
+			
+			// add fav button
+			var capDiv = result.getElementsByClassName("ResultsGrid-caption")[0];
+			var userDiv = capDiv.getElementsByClassName("userDateLoc")[0];
+			var favDiv = document.createElement("div");
+			capDiv.insertBefore(favDiv, userDiv);
+			var favCheck = document.createElement("input");
+			favCheck.classList.add("favCheck");
+			favCheck.setAttribute("type", "checkbox");
+			favCheck.addEventListener("change", updateOrdering);
+			favDiv.appendChild(favCheck);
+			favDiv.appendChild(document.createTextNode("Favorite"));
 		}
 	}
 	return gotNewResult;
 }
 
-function sortedByNumRatings() {
+function acornSorted() {
 	return results.sort(function(a, b) {
+		var aa = getAcornRating(a);
+		var ba = getAcornRating(b);
+		if (aa > ba)
+			return -1;
+		if (aa < ba)
+			return 1;
 		var ar = getNumRatings(a);
 		var br = getNumRatings(b);
 		if (ar > br)
@@ -115,15 +147,20 @@ function applyOrdering(containerElem, orderedElems) {
 	}
 }
 
+function updateOrdering() {
+	console.log("reordering");
+	// rebuild results grid from saved results
+	var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
+	applyOrdering(resultsGrid, acornSorted());
+}
+
 function applyAcorns() {
 	if (!readNewCards())
 		return;
 	
 	console.log("# results: " + results.length);
 	
-	// rebuild results grid from saved results
-	var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
-	applyOrdering(resultsGrid, sortedByNumRatings());
+	updateOrdering();
 }
 
 applyAcorns();
