@@ -9,20 +9,6 @@ function isViewSupported() {
 	return true;
 }
 
-var pagination = document.getElementsByClassName("pagination")[0];
-var paginationObserver = new MutationObserver(function(mutations) {
-		mutations.forEach(function(mutation) {
-			for (addedNode of mutation.addedNodes) {
-				if (addedNode.type == "button") {
-					if (!isViewSupported())
-						return;
-					loadMoreResults();
-				}
-			}
-		})
-	});
-paginationObserver.observe(pagination, { childList: true });
-
 var results = [];
 var resultIds = new Set();
 
@@ -32,6 +18,7 @@ function clearResults() {
 }
 
 function loadMoreResults() {
+	var pagination = document.getElementsByClassName("pagination")[0];
 	for (pagChild of pagination.childNodes) {
 		if (pagChild.type == "button") {
 			if (results.length > 500) {
@@ -57,7 +44,10 @@ function getNumRatings(result) {
 }
 
 function getStarRating(result) {
-	return Number(result.querySelector(".RatingStars").querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
+	var stars = result.querySelector(".RatingStars")
+	if (!stars)
+		return 0;
+	return Number(stars.querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
 }
 
 function getAcornRating(result) {
@@ -181,48 +171,74 @@ function processSearchResults() {
 function refreshView() {
 	if (!isViewSupported())
 		return;
+	clearResults();
 	processSearchResults();
 	updateOrdering();
 }
 
-processSearchResults();
-
 var wasViewSupported = isViewSupported();
-var viewObserver = new MutationObserver(function(mutations) {
-		if (wasViewSupported != isViewSupported() && isViewSupported()) {
-			refreshView();
-		}
-		wasViewSupported = isViewSupported();
-	});
-viewObserver.observe(document, { childList: true, subtree: true });
+function observePageChanges() {
+	var pagination = document.getElementsByClassName("pagination")[0];
+	var paginationObserver = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				for (addedNode of mutation.addedNodes) {
+					if (addedNode.type == "button") {
+						if (!isViewSupported())
+							return;
+						loadMoreResults();
+					}
+				}
+			})
+		});
+	paginationObserver.observe(pagination, { childList: true });
+	
+	var viewObserver = new MutationObserver(function(mutations) {
+			if (wasViewSupported != isViewSupported() && isViewSupported()) {
+				refreshView();
+			}
+			wasViewSupported = isViewSupported();
+		});
+	viewObserver.observe(document, { childList: true, subtree: true });
 
-function observeFilterElement(element) {
-	//console.log("observing " + element.textContent);
-	var filterSpanObserver = new MutationObserver(function (mutations) {
-		console.log("filter change");
-		clearResults();
-	});
-	filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true })
-	filterSpanObservers.push(filterSpanObserver);
-}
+	function observeFilterElement(element) {
+		//console.log("observing " + element.textContent);
+		var filterSpanObserver = new MutationObserver(function (mutations) {
+			console.log("filter change");
+			clearResults();
+			loadMoreResults();
+		});
+		filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true })
+		filterSpanObservers.push(filterSpanObserver);
+	}
 
-var activeFiltersDiv = document.getElementsByClassName("ActiveFilters")[0];
-var filterSpanObservers = [];
-var filterObserver = new MutationObserver(function(mutations) {
-		console.log("resetting results");
-		clearResults();
-		refreshView();
-		
-		for (mutation of mutations) {
-			for (addedNode of mutation.addedNodes) {
-				for (span of addedNode.getElementsByTagName("span")) {
-					observeFilterSpan(span);
+	var activeFiltersDiv = document.getElementsByClassName("ActiveFilters")[0];
+	var filterSpanObservers = [];
+	var filterObserver = new MutationObserver(function(mutations) {
+			console.log("resetting results");
+			
+			for (mutation of mutations) {
+				for (addedNode of mutation.addedNodes) {
+					for (span of addedNode.getElementsByTagName("span")) {
+						observeFilterElement(span);
+					}
 				}
 			}
-		}
-	});
-filterObserver.observe(activeFiltersDiv, { childList: true, subtree: true });
-for (span of activeFiltersDiv.getElementsByTagName("span")) {
-	observeFilterElement(span);
+			
+			clearResults();
+			loadMoreResults();
+		});
+	filterObserver.observe(activeFiltersDiv, { childList: true, subtree: true });
+	for (span of activeFiltersDiv.getElementsByTagName("span")) {
+		observeFilterElement(span);
+	}
+
+	var filtersDiv = document.getElementsByClassName("filters")[0];
+	var currentSortDiv = filtersDiv.getElementsByClassName("filterSection--last")[0];
+	for (span of currentSortDiv.getElementsByTagName("span")) {
+		observeFilterElement(span);
+	}
 }
 
+
+processSearchResults();
+observePageChanges();
