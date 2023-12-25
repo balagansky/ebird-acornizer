@@ -26,6 +26,11 @@ paginationObserver.observe(pagination, { childList: true });
 var results = [];
 var resultIds = new Set();
 
+function clearResults() {
+	results = [];
+	resultIds = new Set();
+}
+
 function loadMoreResults() {
 	for (pagChild of pagination.childNodes) {
 		if (pagChild.type == "button") {
@@ -83,15 +88,18 @@ function readNewCards() {
 			
 			// add fav button
 			var capDiv = result.getElementsByClassName("ResultsGrid-caption")[0];
-			var userDiv = capDiv.getElementsByClassName("userDateLoc")[0];
-			var favDiv = document.createElement("div");
-			capDiv.insertBefore(favDiv, userDiv);
-			var favCheck = document.createElement("input");
-			favCheck.classList.add("favCheck");
-			favCheck.setAttribute("type", "checkbox");
-			favCheck.addEventListener("change", updateOrdering);
-			favDiv.appendChild(favCheck);
-			favDiv.appendChild(document.createTextNode("Favorite"));
+			if (capDiv.getElementsByClassName("favDiv").length == 0) {
+				var userDiv = capDiv.getElementsByClassName("userDateLoc")[0];
+				var favDiv = document.createElement("div");
+				favDiv.classList.add("favDiv");
+				capDiv.insertBefore(favDiv, userDiv);
+				var favCheck = document.createElement("input");
+				favCheck.classList.add("favCheck");
+				favCheck.setAttribute("type", "checkbox");
+				favCheck.addEventListener("change", updateOrdering);
+				favDiv.appendChild(favCheck);
+				favDiv.appendChild(document.createTextNode("Favorite"));
+			}
 		}
 	}
 	return gotNewResult;
@@ -163,21 +171,58 @@ function observeResults() {
 }
 
 function processSearchResults() {
+	if (!isViewSupported())
+		return;
 	observeResults();
 	applyAcorns();
 	loadMoreResults();
 }
 
-if (isViewSupported())
+function refreshView() {
+	if (!isViewSupported())
+		return;
 	processSearchResults();
+	updateOrdering();
+}
+
+processSearchResults();
 
 var wasViewSupported = isViewSupported();
 var viewObserver = new MutationObserver(function(mutations) {
 		if (wasViewSupported != isViewSupported() && isViewSupported()) {
-			processSearchResults();
-			updateOrdering();
+			refreshView();
 		}
 		wasViewSupported = isViewSupported();
 	});
 viewObserver.observe(document, { childList: true, subtree: true });
+
+function observeFilterElement(element) {
+	//console.log("observing " + element.textContent);
+	var filterSpanObserver = new MutationObserver(function (mutations) {
+		console.log("filter change");
+		clearResults();
+	});
+	filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true })
+	filterSpanObservers.push(filterSpanObserver);
+}
+
+var activeFiltersDiv = document.getElementsByClassName("ActiveFilters")[0];
+var filterSpanObservers = [];
+var filterObserver = new MutationObserver(function(mutations) {
+		console.log("resetting results");
+		clearResults();
+		refreshView();
+		
+		for (mutation of mutations) {
+			for (addedNode of mutation.addedNodes) {
+				for (span of addedNode.getElementsByTagName("span")) {
+					observeFilterSpan(span);
+				}
+			}
+		}
+	});
+filterObserver.observe(activeFiltersDiv, { childList: true, subtree: true });
+for (span of activeFiltersDiv.getElementsByTagName("span")) {
+	observeFilterElement(span);
+}
 
