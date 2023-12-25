@@ -1,4 +1,6 @@
 Limitations:
+* added filters are not respected (observe changes to filters and re-parse results)
+ + ditto ebird sort
 * prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
 
 Ideas:

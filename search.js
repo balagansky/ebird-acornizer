@@ -1,44 +1,21 @@
 console.log("running2");
 
-function main() {
-
-var resultsGrid = document.getElementsByClassName("ResultsGrid");
-if (resultsGrid.length == 0) {
-	console.log("Only grid views are supported.")
-	return;
-}
-
-// check if user is logged in
-function getCurrentUser() {
-	// must find this indirectly
-	for (blah of document.getElementsByClassName("Header-group-heading"))
-	{
-		
+function isViewSupported() {
+	var resultsGrid = document.getElementsByClassName("ResultsGrid");
+	if (resultsGrid.length == 0) {
+		console.log("Only grid views are supported.")
+		return false;
 	}
-	
-	return "TODO";
+	return true;
 }
-var currentUser = getCurrentUser();
-
-if (!currentUser)
-{
-	console.log("Not logged in.");
-	return;
-}
-
-// indirectly determine if this is filtering for the current user
-for (blah of document.getElementsByClassName("Icon--user"))
-{
-	//console.log(blah);
-}
-
-console.log(currentUser);
 
 var pagination = document.getElementsByClassName("pagination")[0];
 var paginationObserver = new MutationObserver(function(mutations) {
 		mutations.forEach(function(mutation) {
 			for (addedNode of mutation.addedNodes) {
 				if (addedNode.type == "button") {
+					if (!isViewSupported())
+						return;
 					loadMoreResults();
 				}
 			}
@@ -54,7 +31,7 @@ function loadMoreResults() {
 		if (pagChild.type == "button") {
 			if (results.length > 500) {
 				console.log("Result limit reached.");
-			} else {
+			} else if (isViewSupported()) {
 				console.log("loading more results");
 				pagChild.click();
 			}
@@ -68,6 +45,9 @@ function getResultId(result) {
 }
 
 function getNumRatings(result) {
+	var ratings = result.querySelector(".RatingStars-count")
+	if (!ratings)
+		return 0;
 	return Number(result.querySelector(".RatingStars-count").textContent.match(/\d+/))
 }
 
@@ -163,24 +143,41 @@ function applyAcorns() {
 	updateOrdering();
 }
 
-applyAcorns();
-loadMoreResults();
+var resultsObserver = null;
 
-var resultsObsever = new MutationObserver(function(mutations) {
-		mutations.forEach(function(mutation) {
-			for (addedNode of mutation.addedNodes) {
-				applyAcorns();
-				if (addedNode.type == "li") {
+function observeResults() {
+	if (!resultsObserver) {
+		resultsObserver = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				for (addedNode of mutation.addedNodes) {
 					applyAcorns();
+					if (addedNode.type == "li") {
+						applyAcorns();
+					}
 				}
-			}
-		})
-	});
-var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
-resultsObsever.observe(resultsGrid, { childList: true });
-
+			})
+		});
+		var resultsGrid = document.getElementsByClassName("ResultsGrid")[0];
+		resultsObserver.observe(resultsGrid, { childList: true });
+	}
 }
 
-main();
+function processSearchResults() {
+	observeResults();
+	applyAcorns();
+	loadMoreResults();
+}
 
-// TODO: react to view type changes
+if (isViewSupported())
+	processSearchResults();
+
+var wasViewSupported = isViewSupported();
+var viewObserver = new MutationObserver(function(mutations) {
+		if (wasViewSupported != isViewSupported() && isViewSupported()) {
+			processSearchResults();
+			updateOrdering();
+		}
+		wasViewSupported = isViewSupported();
+	});
+viewObserver.observe(document, { childList: true, subtree: true });
+
