@@ -354,8 +354,13 @@ function observePageChanges() {
 	paginationObserver.observe(pagination, { childList: true });
 	
 	var viewObserver = new MutationObserver(function(mutations) {
-			if (wasViewSupported != isViewSupported() && isViewSupported()) {
-				refreshView();
+			if (wasViewSupported != isViewSupported())
+			{
+				console.log("view change");
+				if (isViewSupported()) {
+					refreshView();
+				}
+				addSettings();
 			}
 			wasViewSupported = isViewSupported();
 		});
@@ -402,11 +407,17 @@ function observePageChanges() {
 
 function addSettings()
 {
+	var existingSettingsDiv = document.getElementById("settingsDiv");
+	if (existingSettingsDiv)
+		existingSettingsDiv.parentElement.removeChild(existingSettingsDiv);
+	
 	var resultsGrid = document.getElementsByClassName("ResultsGrid");
 	if (resultsGrid.length == 0)
 		return;
 	resultsGrid = resultsGrid[0];
+	
 	var settingsDiv = document.createElement("div");
+	settingsDiv.id = "settingsDiv";
 	resultsGrid.parentElement.insertBefore(settingsDiv, resultsGrid);
 	
 	var maxResultsInput = document.createElement("input");
