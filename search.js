@@ -2,17 +2,25 @@ console.log("running2");
 
 var settings;
 var favorites;
+var goods;
+var alternates;
 
 async function readFromStorage(key)
 {
 	var readResult = await chrome.storage.local.get(key);
-	console.log("read " + key + ": " + JSON.stringify(readResult[key]));
+	var valueStr = JSON.stringify(readResult[key]);
+	if (valueStr)
+		valueStr = valueStr.slice(0, 100) + "...";
+	console.log("read " + key + ": " + valueStr);
 	return readResult[key];
 }
 
 async function saveToStorage(key, value)
 {
-	console.log("saving " + key + ": " + JSON.stringify(value));
+	var valueStr = JSON.stringify(JSON.stringify(value));
+	if (valueStr)
+		valueStr = valueStr.slice(0, 100) + "...";
+	console.log("saving " + key + ": " + valueStr);
 	await chrome.storage.local.set({[key]: value}).then(() => { console.log(key + " saved") });
 }
 
@@ -38,11 +46,29 @@ async function readFavorites()
 			favorites = new Set(readFavorites)
 		} catch {}
 	}
+	
+	var readGoods = await readFromStorage("goods");
+	goods = new Set();
+	if (readGoods) {
+		try {
+			goods = new Set(readGoods)
+		} catch {}
+	}
+	
+	var readAlternates = await readFromStorage("alternates");
+	alternates = new Set();
+	if (readAlternates) {
+		try {
+			alternates = new Set(readAlternates)
+		} catch {}
+	}
 }
 
 async function saveFavorites()
 {
 	await saveToStorage("favorites", Array.from(favorites));
+	await saveToStorage("goods", Array.from(goods));
+	await saveToStorage("alternates", Array.from(alternates));
 }
 
 async function readStorage()
@@ -62,10 +88,12 @@ function isViewSupported() {
 
 var results = [];
 var resultIds = new Set();
+var resultOrigOrder = {};
 
 function clearResults() {
 	results = [];
 	resultIds = new Set();
+	resultOrigOrder = {};
 }
 
 function loadMoreResults() {
@@ -104,19 +132,37 @@ function getStarRating(result) {
 function getAcornRating(result) {
 	var favBox = result.getElementsByClassName("favCheck")[0];
 	if (favBox && favBox.checked) {
-		return 1;
-	} else {
-		return 0;
+		return 3;
 	}
+	var goodBox = result.getElementsByClassName("goodCheck")[0];
+	if (goodBox && goodBox.checked) {
+		return 2;
+	}
+	return 0;
+}
+
+function getAlternateRating(result) {
+	var altBox = result.getElementsByClassName("altCheck")[0];
+	if (altBox && altBox.checked) {
+		return 1;
+	}
+	return 0;
+}
+
+function getOriginalOrder(result) {
+	return resultOrigOrder[getResultId(result)];
 }
 
 function readNewCards() {
 	var resultItems = document.getElementsByClassName("ResultsGrid-card");
 	var gotNewResult = false;
+	var cardOrder = 1;
 	for (result of resultItems) {
 		const resultId = getResultId(result);
 		if (!resultIds.has(resultId))
 		{
+			resultOrigOrder[resultId] = cardOrder;
+			
 			gotNewResult = true;
 			//console.log("num ratings " + getNumRatings(result));
 			//console.log("rating " + getStarRating(result));
@@ -131,6 +177,7 @@ function readNewCards() {
 				var favDiv = document.createElement("div");
 				favDiv.classList.add("favDiv");
 				capDiv.insertBefore(favDiv, userDiv);
+				
 				var favCheck = document.createElement("input");
 				favCheck.classList.add("favCheck");
 				favCheck.setAttribute("type", "checkbox");
@@ -138,7 +185,6 @@ function readNewCards() {
 				favCheck.addEventListener("change", (e) => {
 					if (e.target.checked) {
 						favorites.add(resultId);
-						console.log(favorites);
 					} else {
 						favorites.delete(resultId);
 					}
@@ -146,33 +192,90 @@ function readNewCards() {
 					updateOrdering();
 					});
 				favDiv.appendChild(favCheck);
-				favDiv.appendChild(document.createTextNode("Favorite"));
+				favDiv.appendChild(document.createTextNode("Favorite "));
+				
+				var goodCheck = document.createElement("input");
+				goodCheck.classList.add("goodCheck");
+				goodCheck.setAttribute("type", "checkbox");
+				goodCheck.checked = goods.has(resultId);
+				goodCheck.addEventListener("change", (e) => {
+					if (e.target.checked) {
+						goods.add(resultId);
+						favorites.delete(resultId);
+						alternates.delete(resultId);
+						e.target.parentElement.getElementsByClassName("favCheck")[0].checked = false;
+						e.target.parentElement.getElementsByClassName("altCheck")[0].checked = false;
+					} else {
+						goods.delete(resultId);
+					}
+					saveFavorites();
+					updateOrdering();
+					});
+				favDiv.appendChild(goodCheck);
+				favDiv.appendChild(document.createTextNode("Good "));
+				
+				var altCheck = document.createElement("input");
+				altCheck.classList.add("altCheck");
+				altCheck.setAttribute("type", "checkbox");
+				altCheck.checked = alternates.has(resultId);
+				altCheck.addEventListener("change", (e) => {
+					if (e.target.checked) {
+						alternates.add(resultId);
+						goods.delete(resultId);
+						favorites.delete(resultId);
+						e.target.parentElement.getElementsByClassName("goodCheck")[0].checked = false;
+						e.target.parentElement.getElementsByClassName("favCheck")[0].checked = false;
+					} else {
+						goods.delete(resultId);
+					}
+					saveFavorites();
+					updateOrdering();
+					});
+				favDiv.appendChild(altCheck);
+				favDiv.appendChild(document.createTextNode("Alternate"));
 			}
 		}
+		cardOrder += 1;
 	}
 	return gotNewResult;
 }
 
 function acornSorted() {
 	return results.sort(function(a, b) {
-		var aa = getAcornRating(a);
-		var ba = getAcornRating(b);
-		if (aa > ba)
-			return -1;
-		if (aa < ba)
-			return 1;
-		var ar = getNumRatings(a);
-		var br = getNumRatings(b);
-		if (ar > br)
-			return -1;
-		if (ar < br)
-			return 1;
-		var as = getStarRating(a);
-		var bs = getStarRating(b);
-		if (as > bs)
-			return -1;
+		if (settings.sortByFavorites)
+		{
+			var aa = getAcornRating(a);
+			var ba = getAcornRating(b);
+			if (aa > ba)
+				return -1;
+			if (aa < ba)
+				return 1;
+		}
+		if (settings.sortByAlternates)
+		{
+			var aa = getAlternateRating(a);
+			var ba = getAlternateRating(b);
+			if (aa > ba)
+				return -1;
+			if (aa < ba)
+				return 1;
+		}
+		if (settings.sortByNumRatings)
+		{
+			var ar = getNumRatings(a);
+			var br = getNumRatings(b);
+			if (ar > br)
+				return -1;
+			if (ar < br)
+				return 1;
+		}
+		var as = getOriginalOrder(a);
+		var bs = getOriginalOrder(b);
 		if (as < bs)
+			return -1;
+		if (as > bs)
 			return 1;
+		console.log("oops?");
 		return 0;
 	});
 }
@@ -303,26 +406,65 @@ function addSettings()
 	if (resultsGrid.length == 0)
 		return;
 	resultsGrid = resultsGrid[0];
+	var settingsDiv = document.createElement("div");
+	resultsGrid.parentElement.insertBefore(settingsDiv, resultsGrid);
+	
 	var maxResultsInput = document.createElement("input");
 	maxResultsInput.setAttribute("type", "number");
 	maxResultsInput.id = "maxResultsInput";
 	maxResultsInput.min = 1;
 	maxResultsInput.value = settings.maxResults;
-	maxResultsInput.addEventListener("change", updateSettings);
+	maxResultsInput.addEventListener("change", () => {
+		updateSettings().then(loadMoreResults);
+	});
 	
-	resultsGrid.parentElement.insertBefore(maxResultsInput, resultsGrid);
+	settingsDiv.appendChild(document.createTextNode("Auto-Load Results: "));
+	settingsDiv.appendChild(maxResultsInput);
+	
+	settingsDiv.appendChild(document.createTextNode(" "));
+	
+	var favSortCheck = document.createElement("input");
+	favSortCheck.id = "favSortCheck";
+	favSortCheck.setAttribute("type", "checkbox");
+	favSortCheck.checked = settings.sortByFavorites;
+	favSortCheck.addEventListener("change", () => {
+		updateSettings().then(updateOrdering);
+		});
+	settingsDiv.appendChild(document.createTextNode("Sort by "));
+	settingsDiv.appendChild(favSortCheck);
+	settingsDiv.appendChild(document.createTextNode(" Favorites"));
+	
+	var altSortCheck = document.createElement("input");
+	altSortCheck.id = "altSortCheck";
+	altSortCheck.setAttribute("type", "checkbox");
+	altSortCheck.checked = settings.sortByAlternates;
+	altSortCheck.addEventListener("change", () => {
+		updateSettings().then(updateOrdering);
+		});
+	settingsDiv.appendChild(document.createTextNode(", then by "));
+	settingsDiv.appendChild(altSortCheck);
+	settingsDiv.appendChild(document.createTextNode(" Alternates"))
+	
+	var ratingCountSortCheck = document.createElement("input");
+	ratingCountSortCheck.id = "numRatingsSortCheck";
+	ratingCountSortCheck.setAttribute("type", "checkbox");
+	ratingCountSortCheck.checked = settings.sortByNumRatings;
+	ratingCountSortCheck.addEventListener("change", () => {
+		updateSettings().then(updateOrdering);
+		});
+	settingsDiv.appendChild(document.createTextNode(", then by "));
+	settingsDiv.appendChild(ratingCountSortCheck);
+	settingsDiv.appendChild(document.createTextNode(" # of ratings"));
 }
 
 async function updateSettings()
 {
 	await readSettings();
-	console.log("old value is " + settings.maxResults);
 	settings.maxResults = document.getElementById("maxResultsInput").value;
-	console.log("new value is " + settings.maxResults);
+	settings.sortByFavorites = document.getElementById("favSortCheck").checked;
+	settings.sortByAlternates = document.getElementById("altSortCheck").checked;
+	settings.sortByNumRatings = document.getElementById("numRatingsSortCheck").checked;
 	await saveSettings();
-	await readSettings();
-	console.log("new value read back is " + settings.maxResults);
-	loadMoreResults()
 }
 
 function acornize() {

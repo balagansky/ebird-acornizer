@@ -1,22 +1,6 @@
-Limitations:
-* refresh on ditto ebird sort change
+TODO:
 * prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
-
-Ideas:
-* Favorite - filter and/or search option (Best Quality, Favorites first)
-* Custom tags - config page to add custom tags that will appear in search filters and manage media pages
-* Sort by number of ratings (then by quality)
-* Sort by custom ranking
- + similar UI to: https://jsfiddle.net/dq8a0ttt/
-
-Implementation
-* Store mapping from asset id to:
- + species
- + author
- + aspect ratio
- + custom:
-  - favorite
-  - custom tags
-  - custom ranking
-* flex
+* export/import
+* generate results from storage
+* tool to generate static html
 
