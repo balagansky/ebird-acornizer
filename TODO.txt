@@ -1,6 +1,12 @@
 TODO:
 * prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
+* display toggles on all media pages
+ + media upload views
+ + lightbox views
 * export/import
+* styling (acorns etc)
+ + fade extension icon when not on qualifying pages
+* keyboard shortcuts
 * generate results from storage
 * tool to generate static html
 
