@@ -1,5 +1,56 @@
 console.log("running2");
 
+var settings;
+var favorites;
+
+async function readFromStorage(key)
+{
+	var readResult = await chrome.storage.local.get(key);
+	console.log("read " + key + ": " + JSON.stringify(readResult[key]));
+	return readResult[key];
+}
+
+async function saveToStorage(key, value)
+{
+	console.log("saving " + key + ": " + JSON.stringify(value));
+	await chrome.storage.local.set({[key]: value}).then(() => { console.log(key + " saved") });
+}
+
+async function readSettings()
+{
+	var readSettings = await readFromStorage("settings");
+	settings = readSettings || {
+		maxResults: 300
+	}
+}
+
+async function saveSettings()
+{
+	await saveToStorage("settings", settings);
+}
+
+async function readFavorites()
+{
+	var readFavorites = await readFromStorage("favorites");
+	favorites = new Set();
+	if (readFavorites) {
+		try {
+			favorites = new Set(readFavorites)
+		} catch {}
+	}
+}
+
+async function saveFavorites()
+{
+	await saveToStorage("favorites", Array.from(favorites));
+}
+
+async function readStorage()
+{
+	await readSettings();
+	await readFavorites();
+}
+
 function isViewSupported() {
 	var resultsGrid = document.getElementsByClassName("ResultsGrid");
 	if (resultsGrid.length == 0) {
@@ -21,7 +72,7 @@ function loadMoreResults() {
 	var pagination = document.getElementsByClassName("pagination")[0];
 	for (pagChild of pagination.childNodes) {
 		if (pagChild.type == "button") {
-			if (results.length > 500) {
+			if (results.length >= settings.maxResults) {
 				console.log("Result limit reached.");
 			} else if (isViewSupported()) {
 				console.log("loading more results");
@@ -53,20 +104,17 @@ function getStarRating(result) {
 function getAcornRating(result) {
 	var favBox = result.getElementsByClassName("favCheck")[0];
 	if (favBox && favBox.checked) {
-		console.log("acorn");
 		return 1;
 	} else {
 		return 0;
 	}
 }
 
-//<a href="https://macaulaylibrary.org/asset/611860447" target="_blank" class="newTabMenu" style="left: 251px; top: 113.031px;">Open link in new tab</a>
-
 function readNewCards() {
 	var resultItems = document.getElementsByClassName("ResultsGrid-card");
 	var gotNewResult = false;
 	for (result of resultItems) {
-		var resultId = getResultId(result);
+		const resultId = getResultId(result);
 		if (!resultIds.has(resultId))
 		{
 			gotNewResult = true;
@@ -86,7 +134,17 @@ function readNewCards() {
 				var favCheck = document.createElement("input");
 				favCheck.classList.add("favCheck");
 				favCheck.setAttribute("type", "checkbox");
-				favCheck.addEventListener("change", updateOrdering);
+				favCheck.checked = favorites.has(resultId);
+				favCheck.addEventListener("change", (e) => {
+					if (e.target.checked) {
+						favorites.add(resultId);
+						console.log(favorites);
+					} else {
+						favorites.delete(resultId);
+					}
+					saveFavorites();
+					updateOrdering();
+					});
 				favDiv.appendChild(favCheck);
 				favDiv.appendChild(document.createTextNode("Favorite"));
 			}
@@ -239,6 +297,38 @@ function observePageChanges() {
 	}
 }
 
+function addSettings()
+{
+	var resultsGrid = document.getElementsByClassName("ResultsGrid");
+	if (resultsGrid.length == 0)
+		return;
+	resultsGrid = resultsGrid[0];
+	var maxResultsInput = document.createElement("input");
+	maxResultsInput.setAttribute("type", "number");
+	maxResultsInput.id = "maxResultsInput";
+	maxResultsInput.min = 1;
+	maxResultsInput.value = settings.maxResults;
+	maxResultsInput.addEventListener("change", updateSettings);
+	
+	resultsGrid.parentElement.insertBefore(maxResultsInput, resultsGrid);
+}
 
-processSearchResults();
-observePageChanges();
+async function updateSettings()
+{
+	await readSettings();
+	console.log("old value is " + settings.maxResults);
+	settings.maxResults = document.getElementById("maxResultsInput").value;
+	console.log("new value is " + settings.maxResults);
+	await saveSettings();
+	await readSettings();
+	console.log("new value read back is " + settings.maxResults);
+	loadMoreResults()
+}
+
+function acornize() {
+	processSearchResults();
+	observePageChanges();
+	addSettings();
+}
+
+readStorage().then(() => acornize());

@@ -7,7 +7,7 @@
 	"128": "icon_128.png"
   },
   "action": {
-    "default_popup": "hello.html",
+    "default_popup": "popup.html",
     "default_icon": "icon.png"
   },
   "content_scripts": [
@@ -17,5 +17,8 @@
 		],
 		"js": ["search.js"]
 	}
+  ],
+  "permissions": [
+    "storage"
   ]
 }
