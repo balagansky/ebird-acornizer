@@ -4,6 +4,8 @@ var settings;
 var favorites;
 var goods;
 var alternates;
+var funnies;
+var stares;
 
 async function readFromStorage(key)
 {
@@ -62,6 +64,22 @@ async function readFavorites()
 			alternates = new Set(readAlternates)
 		} catch {}
 	}
+	
+	var readFunnies = await readFromStorage("funnies");
+	funnies = new Set();
+	if (readFunnies) {
+		try {
+			funnies = new Set(readFunnies)
+		} catch {}
+	}
+	
+	var readStares = await readFromStorage("stares");
+	stares = new Set();
+	if (readStares) {
+		try {
+			stares = new Set(readStares)
+		} catch {}
+	}
 }
 
 async function saveFavorites()
@@ -69,6 +87,8 @@ async function saveFavorites()
 	await saveToStorage("favorites", Array.from(favorites));
 	await saveToStorage("goods", Array.from(goods));
 	await saveToStorage("alternates", Array.from(alternates));
+	await saveToStorage("funnies", Array.from(funnies));
+	await saveToStorage("stares", Array.from(stares));
 }
 
 async function readStorage()
@@ -129,25 +149,22 @@ function getStarRating(result) {
 	return Number(stars.querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
 }
 
+function getCheckboxState(result, checkboxClassName) {
+	var checkBox = result.getElementsByClassName(checkboxClassName)[0];
+	return checkBox && checkBox.checked;
+}
+
 function getAcornRating(result) {
-	var favBox = result.getElementsByClassName("favCheck")[0];
-	if (favBox && favBox.checked) {
+	if (getCheckboxState(result, "favCheck"))
 		return 3;
-	}
-	var goodBox = result.getElementsByClassName("goodCheck")[0];
-	if (goodBox && goodBox.checked) {
+	if (getCheckboxState(result, "goodCheck"))
 		return 2;
-	}
 	return 0;
 }
 
-function getAlternateRating(result) {
-	var altBox = result.getElementsByClassName("altCheck")[0];
-	if (altBox && altBox.checked) {
-		return 1;
-	}
-	return 0;
-}
+function getAlternateRating(result) { return getCheckboxState(result, "altCheck");} 
+function getFunnyRating(result) { return getCheckboxState(result, "funnyCheck");} 
+function getStareRating(result) { return getCheckboxState(result, "stareCheck");} 
 
 function getOriginalOrder(result) {
 	return resultOrigOrder[getResultId(result)];
@@ -234,7 +251,40 @@ function readNewCards() {
 					updateOrdering();
 					});
 				favDiv.appendChild(altCheck);
-				favDiv.appendChild(document.createTextNode("Alternate"));
+				favDiv.appendChild(document.createTextNode("Alternate "));
+				
+				var funnyCheck = document.createElement("input");
+				funnyCheck.classList.add("funnyCheck");
+				funnyCheck.setAttribute("type", "checkbox");
+				funnyCheck.checked = funnies.has(resultId);
+				funnyCheck.addEventListener("change", (e) => {
+					if (e.target.checked) {
+						funnies.add(resultId);
+					} else {
+						funnies.delete(resultId);
+					}
+					saveFavorites();
+					updateOrdering();
+					});
+				favDiv.appendChild(document.createTextNode(" | "));
+				favDiv.appendChild(funnyCheck);
+				favDiv.appendChild(document.createTextNode("Funny/Odd "));
+				
+				var stareCheck = document.createElement("input");
+				stareCheck.classList.add("stareCheck");
+				stareCheck.setAttribute("type", "checkbox");
+				stareCheck.checked = stares.has(resultId);
+				stareCheck.addEventListener("change", (e) => {
+					if (e.target.checked) {
+						stares.add(resultId);
+					} else {
+						stares.delete(resultId);
+					}
+					saveFavorites();
+					updateOrdering();
+					});
+				favDiv.appendChild(stareCheck);
+				favDiv.appendChild(document.createTextNode("Staring"));
 			}
 		}
 		cardOrder += 1;
@@ -244,6 +294,24 @@ function readNewCards() {
 
 function acornSorted() {
 	return results.sort(function(a, b) {
+		if (settings.sortByFunny)
+		{
+			var aa = getFunnyRating(a);
+			var ba = getFunnyRating(b);
+			if (aa > ba)
+				return -1;
+			if (aa < ba)
+				return 1;
+		}
+		if (settings.sortByStare)
+		{
+			var aa = getStareRating(a);
+			var ba = getStareRating(b);
+			if (aa > ba)
+				return -1;
+			if (aa < ba)
+				return 1;
+		}
 		if (settings.sortByFavorites)
 		{
 			var aa = getAcornRating(a);
@@ -468,6 +536,35 @@ function addSettings()
 	settingsDiv.appendChild(document.createTextNode(", then by "));
 	settingsDiv.appendChild(ratingCountSortCheck);
 	settingsDiv.appendChild(document.createTextNode(" # of ratings"));
+	
+	settingsDiv.appendChild(document.createTextNode(". Show on top: "));
+	
+	var funnySortcheck = document.createElement("input");
+	funnySortcheck.id = "funnySortCheck";
+	funnySortcheck.setAttribute("type", "checkbox");
+	funnySortcheck.checked = settings.sortByFunny;
+	funnySortcheck.addEventListener("change", (e) => {
+		if (e.target.checked) {
+			document.getElementById("stareSortCheck").checked = false;
+		}
+		updateSettings().then(updateOrdering);
+		});
+	settingsDiv.appendChild(funnySortcheck);
+	settingsDiv.appendChild(document.createTextNode(" Funny/Odd "));
+	
+	var stareSortCheck = document.createElement("input");
+	stareSortCheck.id = "stareSortCheck";
+	stareSortCheck.setAttribute("type", "checkbox");
+	stareSortCheck.checked = settings.sortByStare;
+	stareSortCheck.addEventListener("change", (e) => {
+		if (e.target.checked) {
+			document.getElementById("funnySortCheck").checked = false;
+		}
+		updateSettings().then(updateOrdering);
+		});
+	settingsDiv.appendChild(document.createTextNode(", or "));
+	settingsDiv.appendChild(stareSortCheck);
+	settingsDiv.appendChild(document.createTextNode(" Staring"));
 }
 
 async function updateSettings()
@@ -477,6 +574,8 @@ async function updateSettings()
 	settings.sortByFavorites = document.getElementById("favSortCheck").checked;
 	settings.sortByAlternates = document.getElementById("altSortCheck").checked;
 	settings.sortByNumRatings = document.getElementById("numRatingsSortCheck").checked;
+	settings.sortByFunny = document.getElementById("funnySortCheck").checked;
+	settings.sortByStare = document.getElementById("stareSortCheck").checked;
 	await saveSettings();
 }
 
