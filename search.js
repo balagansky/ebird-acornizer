@@ -226,7 +226,7 @@ function readNewCards() {
 						e.target.parentElement.getElementsByClassName("goodCheck")[0].checked = false;
 						e.target.parentElement.getElementsByClassName("favCheck")[0].checked = false;
 					} else {
-						goods.delete(resultId);
+						alternates.delete(resultId);
 					}
 					saveFavorites();
 					updateOrdering();
