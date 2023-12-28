@@ -5,8 +5,13 @@ TODO:
  + lightbox views
 * export/import
 * styling (acorns etc)
+* Move/duplicate More Results button on top
+ + Show number of results loaded so far
+* Additional tags?
+ + female/immature
+ + injured (so users can hide these / show them last)
+* Custom tags
  + fade extension icon when not on qualifying pages
 * keyboard shortcuts
 * generate results from storage
-* tool to generate static html
-
+* tool to generate static html / integration with some simple/free static html hosting service
