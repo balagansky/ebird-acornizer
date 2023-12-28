@@ -7,6 +7,8 @@ var alternates;
 var funnies;
 var stares;
 
+const cMaxAutoLoad = 1000;
+
 async function readFromStorage(key)
 {
 	var readResult = await chrome.storage.local.get(key);
@@ -494,8 +496,11 @@ function addSettings()
 	maxResultsInput.setAttribute("type", "number");
 	maxResultsInput.id = "maxResultsInput";
 	maxResultsInput.min = 1;
+	maxResultsInput.max = cMaxAutoLoad;
 	maxResultsInput.value = settings.maxResults;
-	maxResultsInput.addEventListener("change", () => {
+	maxResultsInput.addEventListener("change", (e) => {
+		var input = document.getElementById("maxResultsInput");
+		input.value = Math.min(input.max, Math.max(input.min, input.value));
 		updateSettings().then(loadMoreResults);
 	});
 	
