@@ -1,10 +1,10 @@
 TODO:
+* export/import
 * prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
+* fix - sometimes updating filters doesn't add controls to results
 * display toggles on all media pages
  + media upload views
  + lightbox views
-* export/import
-* styling (acorns etc)
 * Move/duplicate More Results button on top
  + Show number of results loaded so far
 * Additional tags?
@@ -12,6 +12,7 @@ TODO:
  + injured (so users can hide these / show them last)
 * Custom tags
  + fade extension icon when not on qualifying pages
+* improve styling
 * keyboard shortcuts
 * generate results from storage
 * tool to generate static html / integration with some simple/free static html hosting service

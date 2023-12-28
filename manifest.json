@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "eBird Acornizer",
-  "description": "Custom ratings and tags for eBird media.",
-  "version": "0.1",
+  "description": "Additional local ratings and tags, and enhanced sorting functionality for eBird media.",
+  "version": "0.1.0",
   "icons": {
 	"128": "icon_128.png"
   },
@@ -17,6 +17,12 @@
 		],
 		"js": ["search.js"]
 	}
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "icon.png" ],
+      "matches": [ "https://media.ebird.org/*" ]
+    }
   ],
   "permissions": [
     "storage"

@@ -172,6 +172,14 @@ function getOriginalOrder(result) {
 	return resultOrigOrder[getResultId(result)];
 }
 
+function createAcornizerIconElement(size)
+{
+	var img = document.createElement("img");
+	img.src = chrome.runtime.getURL("icon.png");
+	img.style = `width:${size}px;height:${size}px`;
+	return img;
+}
+
 function readNewCards() {
 	var resultItems = document.getElementsByClassName("ResultsGrid-card");
 	var gotNewResult = false;
@@ -196,6 +204,8 @@ function readNewCards() {
 				var favDiv = document.createElement("div");
 				favDiv.classList.add("favDiv");
 				capDiv.insertBefore(favDiv, userDiv);
+				
+				favDiv.appendChild(createAcornizerIconElement(20));
 				
 				var favCheck = document.createElement("input");
 				favCheck.classList.add("favCheck");
@@ -504,6 +514,7 @@ function addSettings()
 		updateSettings().then(loadMoreResults);
 	});
 	
+	settingsDiv.appendChild(createAcornizerIconElement(25));
 	settingsDiv.appendChild(document.createTextNode("Auto-Load Results: "));
 	settingsDiv.appendChild(maxResultsInput);
 	
@@ -555,7 +566,7 @@ function addSettings()
 		updateSettings().then(updateOrdering);
 		});
 	settingsDiv.appendChild(funnySortcheck);
-	settingsDiv.appendChild(document.createTextNode(" Funny/Odd "));
+	settingsDiv.appendChild(document.createTextNode(" Funny/Odd"));
 	
 	var stareSortCheck = document.createElement("input");
 	stareSortCheck.id = "stareSortCheck";
