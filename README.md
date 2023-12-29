@@ -19,7 +19,7 @@ In the future, this extension may allow custom tags. For now, the following extr
 tags are enabled:
 
 * personal ratings: favorite, good, or alternate
-* funny/odd
+* funny
 * staring (bird is looking at the camera)
 
 Additional features:

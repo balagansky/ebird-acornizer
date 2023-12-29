@@ -278,7 +278,7 @@ function readNewCards() {
 					});
 				favDiv.appendChild(document.createTextNode(" | "));
 				favDiv.appendChild(funnyCheck);
-				favDiv.appendChild(document.createTextNode("Funny/Odd "));
+				favDiv.appendChild(document.createTextNode("Funny "));
 				
 				var stareCheck = document.createElement("input");
 				stareCheck.classList.add("stareCheck");
@@ -564,7 +564,7 @@ function addSettings()
 		updateSettings().then(updateOrdering);
 		});
 	settingsDiv.appendChild(funnySortcheck);
-	settingsDiv.appendChild(document.createTextNode(" Funny/Odd"));
+	settingsDiv.appendChild(document.createTextNode(" Funny"));
 	
 	var stareSortCheck = document.createElement("input");
 	stareSortCheck.id = "stareSortCheck";
