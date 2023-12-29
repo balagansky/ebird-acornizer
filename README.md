@@ -47,17 +47,29 @@ Download this repository:
 
 Unzip the files.
 
-Navigate to chrome://extensions, enable Developer mode, click 'Load Unpacked',
+Navigate to [chrome://extensions](chrome://extensions), enable Developer mode, click 'Load Unpacked',
 and point it at chrome_root inside the files you just unzipped.
 
-To use the extension, navigate to a media search page and switch to Grid View:
-
-![grid view](gridview.png)
+### Updating
 
 To update an existing installation, repeat the steps above,
 but *completely replace* the original files with the newly downloaded files,
 then browse to chrome://extensions and click the refresh icon on the extension.
 It may be a good idea to first export your data just in case (via extension's Options page).
+
+## Using the extension
+
+To use the extension, navigate to an eBird media search page
+(e.g. [https://media.ebird.org/catalog?view=grid&mediaType=photo](https://media.ebird.org/catalog?view=grid&mediaType=photo))
+or My eBird -> 'Species with photos'.
+Make sure you are using Grid View:
+
+![grid view](gridview.png)
+
+The extension works best when viewing your own media for a single species. Note that the
+extension is currently only able to apply custom sorting to search results obtained through
+the existing eBird search interface. You can increase or decrease the amount of results the
+extension will auto-load via the settings bar that appears above the search result grid.
 
 ## Can I help?
 
