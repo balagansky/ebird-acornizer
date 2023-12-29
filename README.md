@@ -71,6 +71,9 @@ extension is currently only able to apply custom sorting to search results obtai
 the existing eBird search interface. You can increase or decrease the amount of results the
 extension will auto-load via the settings bar that appears above the search result grid.
 
+If controls are not showing up or you notice extra or missing search results, please try
+refreshing the page.
+
 ## Can I help?
 
 Yes! See [CONTRIBUTING.md](./CONTRIBUTING.md).
