@@ -580,7 +580,7 @@ function addSettings()
 		});
 	settingsDiv.appendChild(document.createTextNode(", or "));
 	settingsDiv.appendChild(stareSortCheck);
-	settingsDiv.appendChild(document.createTextNode(" Staring"));
+	settingsDiv.appendChild(document.createTextNode(" Staring."));
 }
 
 async function updateSettings()
