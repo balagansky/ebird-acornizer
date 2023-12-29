@@ -16,4 +16,5 @@ TODO:
 * tool to generate static html / integration with some simple/free static html hosting service
 
 Known bugs:
+* breaks if there is absolutely no filter set (not even mediaType=photos)
 * sometimes updating filters doesn't add controls to results
