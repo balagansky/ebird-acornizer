@@ -1,5 +1,3 @@
-console.log("running2");
-
 var settings;
 var favorites;
 var goods;
