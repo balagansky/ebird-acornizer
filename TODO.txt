@@ -8,12 +8,21 @@ TODO:
 * Additional tags?
  + female/immature
  + injured (so users can hide these / show them last)
+ + flock
 * Custom tags
  + fade extension icon when not on qualifying pages
 * improve styling
 * keyboard shortcuts
 * synthesize results from storage
+ + filter for only favorites
+  - best of species tag + filter
 * tool to generate static html / integration with some simple/free static html hosting service
+
+Ideas of unclear difficulty:
+* Features related to species association
+ + annotation of tagged photo counts on life list
+ + show favorite photos in photo editing iteration views to aid in tagging
+ + generate illustrated species gallery (from tagged favorites/add new species-best tag)
 
 Known bugs:
 * breaks if there is absolutely no filter set (not even mediaType=photos)

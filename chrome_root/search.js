@@ -117,6 +117,9 @@ function clearResults() {
 }
 
 function loadMoreResults() {
+	if (results.length == 0)
+		return;
+	
 	var pagination = document.getElementsByClassName("pagination")[0];
 	for (pagChild of pagination.childNodes) {
 		if (pagChild.type == "button") {
