@@ -215,6 +215,8 @@ function readNewCards() {
 				favCheck.addEventListener("change", (e) => {
 					if (e.target.checked) {
 						favorites.add(resultId);
+						goods.delete(resultId);
+						alternates.delete(resultId);
 						e.target.parentElement.getElementsByClassName("goodCheck")[0].checked = false;
 						e.target.parentElement.getElementsByClassName("altCheck")[0].checked = false;
 					} else {
