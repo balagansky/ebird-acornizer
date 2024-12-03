@@ -116,6 +116,9 @@ function clearResults() {
 	resultOrigOrder = {};
 }
 
+var additionalLoadCount = 0
+const cImagesPerLoad = 30
+
 function loadMoreResults() {
 	if (results.length == 0)
 		return;
@@ -125,9 +128,12 @@ function loadMoreResults() {
 		if (pagChild.type == "button") {
 			if (results.length >= settings.maxResults) {
 				console.log("Result limit reached.");
+			} else if (additionalLoadCount > settings.maxResults / cImagesPerLoad) {
+				console.log("Safety additional load limit reached")
 			} else if (isViewSupported()) {
 				console.log("loading more results");
 				pagChild.click();
+				additionalLoadCount += 1
 			}
 			break;
 		}
