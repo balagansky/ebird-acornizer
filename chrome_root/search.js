@@ -204,9 +204,10 @@ function readNewCards() {
 			// NOTE: cloning breaks site code. Have to manipulate in place.
 			results.push(result);
 			
-			// add fav button
+			// add acornizer controls
 			var capDiv = result.getElementsByClassName("ResultsGrid-caption")[0];
 			if (capDiv.getElementsByClassName("favDiv").length == 0) {
+				// add fav div
 				var userDiv = capDiv.getElementsByClassName("userDateLoc")[0];
 				var favDiv = document.createElement("div");
 				favDiv.classList.add("favDiv");
@@ -306,6 +307,21 @@ function readNewCards() {
 					});
 				favDiv.appendChild(stareCheck);
 				favDiv.appendChild(document.createTextNode("Staring"));
+				
+				// add image url
+				var modifiedLibraryDiv = document.createElement("div")
+				modifiedLibraryDiv.style = "display: flex; justify-content: space-between"
+				var libraryAnchor = capDiv.lastChild
+				capDiv.appendChild(modifiedLibraryDiv)
+				modifiedLibraryDiv.appendChild(libraryAnchor)
+				var customLibraryDiv = document.createElement("div")
+				customLibraryDiv.appendChild(createAcornizerIconElement(20));
+				var libraryImageUrl = document.createElement("a");
+				libraryImageUrl.href = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${resultId}/2400`
+				libraryImageUrl.target = "_blank"
+				libraryImageUrl.innerText = "Image Link"
+				customLibraryDiv.appendChild(libraryImageUrl)
+				modifiedLibraryDiv.appendChild(customLibraryDiv)
 			}
 		}
 		cardOrder += 1;
