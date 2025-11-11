@@ -315,13 +315,44 @@ function readNewCards() {
 				capDiv.appendChild(modifiedLibraryDiv)
 				modifiedLibraryDiv.appendChild(libraryAnchor)
 				var customLibraryDiv = document.createElement("div")
-				customLibraryDiv.appendChild(createAcornizerIconElement(20));
+				customLibraryDiv.appendChild(createAcornizerIconElement(18));
 				var libraryImageUrl = document.createElement("a");
 				libraryImageUrl.href = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${resultId}/2400`
 				libraryImageUrl.target = "_blank"
 				libraryImageUrl.innerText = "Image Link"
 				customLibraryDiv.appendChild(libraryImageUrl)
 				modifiedLibraryDiv.appendChild(customLibraryDiv)
+				
+				// add average rating (query api)
+				var modifiedRatingDiv = document.createElement("div")
+				modifiedRatingDiv.style = "display: flex; justify-content: space-between"
+				var ratingAnchor = capDiv.getElementsByClassName("RatingStars")[0]
+				var userDiv = capDiv.getElementsByClassName("userDateLoc")[0]
+				capDiv.insertBefore(modifiedRatingDiv, userDiv)
+				modifiedRatingDiv.appendChild(ratingAnchor)
+				var customRatingDiv = document.createElement("div")
+				customRatingDiv.style = "display: flex"
+				customRatingDiv.appendChild(createAcornizerIconElement(18));
+				var avgRatingDiv = document.createElement("div")
+				avgRatingDiv.id = `avg${resultId}`
+				avgRatingDiv.innerHTML = 'Avg: (loading...)'
+				customRatingDiv.appendChild(avgRatingDiv)
+				modifiedRatingDiv.appendChild(customRatingDiv)
+				
+				fetch(`https://media.ebird.org/internal/v1/get-rating/${resultId}`)
+					.then(r => {
+						if (r.ok) {
+							return r.json()
+						}
+						throw new Error('rating query failed')
+					})
+					.then(data => {
+						ratingDivToUpdate = document.getElementById(`avg${resultId}`)
+						ratingDivToUpdate.innerHTML = 'Avg: ' + data[resultId].ratingAverage.toString()
+					})
+					.catch(err => {
+						console.error('rating query failed')
+					})
 			}
 		}
 		cardOrder += 1;

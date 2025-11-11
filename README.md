@@ -27,6 +27,8 @@ Additional features:
 * Sort by custom tags
 * Sort by number of ratings
 * Import/export (via extension Options)
+* Show average rating
+* Show link to high res photo
 
 ## Limitations
 
