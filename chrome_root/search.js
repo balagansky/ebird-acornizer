@@ -5,7 +5,7 @@ var alternates;
 var funnies;
 var stares;
 
-const cMaxAutoLoad = 1000;
+const cMaxAutoLoad = 500;
 
 async function readFromStorage(key)
 {
@@ -109,6 +109,7 @@ function isViewSupported() {
 var results = [];
 var resultIds = new Set();
 var resultOrigOrder = {};
+var resultRatings = {};
 
 function clearResults() {
 	results = [];
