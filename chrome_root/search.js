@@ -324,35 +324,43 @@ function readNewCards() {
 				modifiedLibraryDiv.appendChild(customLibraryDiv)
 				
 				// add average rating (query api)
-				var modifiedRatingDiv = document.createElement("div")
-				modifiedRatingDiv.style = "display: flex; justify-content: space-between"
-				var ratingAnchor = capDiv.getElementsByClassName("RatingStars")[0]
-				var userDiv = capDiv.getElementsByClassName("userDateLoc")[0]
-				capDiv.insertBefore(modifiedRatingDiv, userDiv)
-				modifiedRatingDiv.appendChild(ratingAnchor)
-				var customRatingDiv = document.createElement("div")
-				customRatingDiv.style = "display: flex"
-				customRatingDiv.appendChild(createAcornizerIconElement(18));
-				var avgRatingDiv = document.createElement("div")
-				avgRatingDiv.id = `avg${resultId}`
-				avgRatingDiv.innerHTML = 'Avg: (loading...)'
-				customRatingDiv.appendChild(avgRatingDiv)
-				modifiedRatingDiv.appendChild(customRatingDiv)
-				
-				fetch(`https://media.ebird.org/internal/v1/get-rating/${resultId}`)
-					.then(r => {
-						if (r.ok) {
-							return r.json()
-						}
-						throw new Error('rating query failed')
-					})
-					.then(data => {
-						ratingDivToUpdate = document.getElementById(`avg${resultId}`)
-						ratingDivToUpdate.innerHTML = 'Avg: ' + data[resultId].ratingAverage.toString()
-					})
-					.catch(err => {
-						console.error('rating query failed')
-					})
+				try {
+					var modifiedRatingDiv = document.createElement("div")
+					modifiedRatingDiv.style = "display: flex; justify-content: space-between"
+					var userDiv = capDiv.getElementsByClassName("userDateLoc")[0]
+					capDiv.insertBefore(modifiedRatingDiv, userDiv)
+					var ratingAnchor = capDiv.getElementsByClassName("RatingStars")[0]
+					modifiedRatingDiv.appendChild(ratingAnchor)
+					var customRatingDiv = document.createElement("div")
+					customRatingDiv.style = "display: flex"
+					customRatingDiv.appendChild(createAcornizerIconElement(18));
+					var avgRatingDiv = document.createElement("div")
+					avgRatingDiv.id = `avg${resultId}`
+					avgRatingDiv.innerHTML = 'Avg: (loading...)'
+					customRatingDiv.appendChild(avgRatingDiv)
+					modifiedRatingDiv.appendChild(customRatingDiv)
+					
+					fetch(`https://media.ebird.org/internal/v1/get-rating/${resultId}`)
+						.then(r => {
+							if (r.ok) {
+								return r.json()
+							}
+							throw new Error('rating query failed')
+						})
+						.then(data => {
+							ratingDivToUpdate = document.getElementById(`avg${resultId}`)
+							resultRatings = data[resultId]
+							ratingDivToUpdate.innerHTML = 'Avg: ' + parseFloat(resultRatings.ratingAverage.toFixed(3)).toString()
+							if ("myRating" in resultRatings && resultRatings.myRating > 0) {
+								ratingDivToUpdate.innerHTML = "My: " + resultRatings.myRating.toString() + " | " + ratingDivToUpdate.innerHTML;
+							}
+						})
+						.catch(err => {
+							console.error('rating query failed')
+						})
+				} catch (e) {
+					// ignoring missing ratings, etc
+				}
 			}
 		}
 		cardOrder += 1;
