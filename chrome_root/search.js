@@ -31,7 +31,7 @@ async function readSettings()
 	var readSettings = await readFromStorage("settings");
 	settings = readSettings || {
 		maxResults: 300
-	}
+	};
 }
 
 async function saveSettings()
@@ -45,7 +45,7 @@ async function readFavorites()
 	favorites = new Set();
 	if (readFavorites) {
 		try {
-			favorites = new Set(readFavorites)
+			favorites = new Set(readFavorites);
 		} catch {}
 	}
 	
@@ -53,7 +53,7 @@ async function readFavorites()
 	goods = new Set();
 	if (readGoods) {
 		try {
-			goods = new Set(readGoods)
+			goods = new Set(readGoods);
 		} catch {}
 	}
 	
@@ -61,7 +61,7 @@ async function readFavorites()
 	alternates = new Set();
 	if (readAlternates) {
 		try {
-			alternates = new Set(readAlternates)
+			alternates = new Set(readAlternates);
 		} catch {}
 	}
 	
@@ -69,7 +69,7 @@ async function readFavorites()
 	funnies = new Set();
 	if (readFunnies) {
 		try {
-			funnies = new Set(readFunnies)
+			funnies = new Set(readFunnies);
 		} catch {}
 	}
 	
@@ -77,7 +77,7 @@ async function readFavorites()
 	stares = new Set();
 	if (readStares) {
 		try {
-			stares = new Set(readStares)
+			stares = new Set(readStares);
 		} catch {}
 	}
 }
@@ -100,7 +100,7 @@ async function readStorage()
 function isViewSupported() {
 	var resultsGrid = document.getElementsByClassName("ResultsGrid");
 	if (resultsGrid.length == 0) {
-		console.log("Only grid views are supported.")
+		console.log("Only grid views are supported.");
 		return false;
 	}
 	return true;
@@ -116,8 +116,8 @@ function clearResults() {
 	resultOrigOrder = {};
 }
 
-var additionalLoadCount = 0
-const cImagesPerLoad = 30
+var additionalLoadCount = 0;
+const cImagesPerLoad = 30;
 
 function loadMoreResults() {
 	if (results.length == 0)
@@ -129,11 +129,11 @@ function loadMoreResults() {
 			if (results.length >= settings.maxResults) {
 				console.log("Result limit reached.");
 			} else if (additionalLoadCount > settings.maxResults / cImagesPerLoad) {
-				console.log("Safety additional load limit reached")
+				console.log("Safety additional load limit reached");
 			} else if (isViewSupported()) {
 				console.log("loading more results");
 				pagChild.click();
-				additionalLoadCount += 1
+				additionalLoadCount += 1;
 			}
 			break;
 		}
@@ -145,17 +145,17 @@ function getResultId(result) {
 }
 
 function getNumRatings(result) {
-	var ratings = result.querySelector(".RatingStars-count")
+	var ratings = result.querySelector(".RatingStars-count");
 	if (!ratings)
 		return 0;
-	return Number(result.querySelector(".RatingStars-count").textContent.match(/\d+/))
+	return Number(result.querySelector(".RatingStars-count").textContent.match(/\d+/));
 }
 
 function getStarRating(result) {
-	var stars = result.querySelector(".RatingStars")
+	var stars = result.querySelector(".RatingStars");
 	if (!stars)
 		return 0;
-	return Number(stars.querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/))
+	return Number(stars.querySelector("[class=is-visuallyHidden]").textContent.match(/\d+/));
 }
 
 function getCheckboxState(result, checkboxClassName) {
@@ -309,55 +309,55 @@ function readNewCards() {
 				favDiv.appendChild(document.createTextNode("Staring"));
 				
 				// add image url
-				var modifiedLibraryDiv = document.createElement("div")
-				modifiedLibraryDiv.style = "display: flex; justify-content: space-between"
-				var libraryAnchor = capDiv.lastChild
-				capDiv.appendChild(modifiedLibraryDiv)
-				modifiedLibraryDiv.appendChild(libraryAnchor)
-				var customLibraryDiv = document.createElement("div")
+				var modifiedLibraryDiv = document.createElement("div");
+				modifiedLibraryDiv.style = "display: flex; justify-content: space-between";
+				var libraryAnchor = capDiv.lastChild;
+				capDiv.appendChild(modifiedLibraryDiv);
+				modifiedLibraryDiv.appendChild(libraryAnchor);
+				var customLibraryDiv = document.createElement("div");
 				customLibraryDiv.appendChild(createAcornizerIconElement(18));
 				var libraryImageUrl = document.createElement("a");
-				libraryImageUrl.href = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${resultId}/2400`
-				libraryImageUrl.target = "_blank"
-				libraryImageUrl.innerText = "Image Link"
-				customLibraryDiv.appendChild(libraryImageUrl)
-				modifiedLibraryDiv.appendChild(customLibraryDiv)
+				libraryImageUrl.href = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${resultId}/2400`;
+				libraryImageUrl.target = "_blank";
+				libraryImageUrl.innerText = "Image Link";
+				customLibraryDiv.appendChild(libraryImageUrl);
+				modifiedLibraryDiv.appendChild(customLibraryDiv);
 				
 				// add average rating (query api)
 				try {
-					var modifiedRatingDiv = document.createElement("div")
-					modifiedRatingDiv.style = "display: flex; justify-content: space-between"
-					var userDiv = capDiv.getElementsByClassName("userDateLoc")[0]
-					capDiv.insertBefore(modifiedRatingDiv, userDiv)
-					var ratingAnchor = capDiv.getElementsByClassName("RatingStars")[0]
-					modifiedRatingDiv.appendChild(ratingAnchor)
-					var customRatingDiv = document.createElement("div")
-					customRatingDiv.style = "display: flex"
+					var modifiedRatingDiv = document.createElement("div");
+					modifiedRatingDiv.style = "display: flex; justify-content: space-between";
+					var userDiv = capDiv.getElementsByClassName("userDateLoc")[0];
+					capDiv.insertBefore(modifiedRatingDiv, userDiv);
+					var ratingAnchor = capDiv.getElementsByClassName("RatingStars")[0];
+					modifiedRatingDiv.appendChild(ratingAnchor);
+					var customRatingDiv = document.createElement("div");
+					customRatingDiv.style = "display: flex";
 					customRatingDiv.appendChild(createAcornizerIconElement(18));
-					var avgRatingDiv = document.createElement("div")
-					avgRatingDiv.id = `avg${resultId}`
-					avgRatingDiv.innerHTML = 'Avg: (loading...)'
-					customRatingDiv.appendChild(avgRatingDiv)
-					modifiedRatingDiv.appendChild(customRatingDiv)
+					var avgRatingDiv = document.createElement("div");
+					avgRatingDiv.id = `avg${resultId}`;
+					avgRatingDiv.innerHTML = 'Avg: (loading...)';
+					customRatingDiv.appendChild(avgRatingDiv);
+					modifiedRatingDiv.appendChild(customRatingDiv);
 					
 					fetch(`https://media.ebird.org/internal/v1/get-rating/${resultId}`)
 						.then(r => {
 							if (r.ok) {
-								return r.json()
+								return r.json();
 							}
-							throw new Error('rating query failed')
+							throw new Error('rating query failed');
 						})
 						.then(data => {
-							ratingDivToUpdate = document.getElementById(`avg${resultId}`)
-							resultRatings = data[resultId]
-							ratingDivToUpdate.innerHTML = 'Avg: ' + parseFloat(resultRatings.ratingAverage.toFixed(3)).toString()
+							ratingDivToUpdate = document.getElementById(`avg${resultId}`);
+							resultRatings = data[resultId];
+							ratingDivToUpdate.innerHTML = 'Avg: ' + parseFloat(resultRatings.ratingAverage.toFixed(3)).toString();
 							if ("myRating" in resultRatings && resultRatings.myRating > 0) {
 								ratingDivToUpdate.innerHTML = "My: " + resultRatings.myRating.toString() + " | " + ratingDivToUpdate.innerHTML;
 							}
 						})
 						.catch(err => {
-							console.error('rating query failed')
-						})
+							console.error('rating query failed');
+						});
 				} catch (e) {
 					// ignoring missing ratings, etc
 				}
@@ -519,7 +519,7 @@ function observePageChanges() {
 			clearResults();
 			loadMoreResults();
 		});
-		filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true })
+		filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true });
 		filterSpanObservers.push(filterSpanObserver);
 	}
 
@@ -604,7 +604,7 @@ function addSettings()
 		});
 	settingsDiv.appendChild(document.createTextNode(", then by "));
 	settingsDiv.appendChild(altSortCheck);
-	settingsDiv.appendChild(document.createTextNode(" Alternates"))
+	settingsDiv.appendChild(document.createTextNode(" Alternates"));
 	
 	var ratingCountSortCheck = document.createElement("input");
 	ratingCountSortCheck.id = "numRatingsSortCheck";
