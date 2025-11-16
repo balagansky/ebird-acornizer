@@ -5,8 +5,7 @@ first check existing issues and [TODO.txt](./TODO.txt).
 
 Contributions via pull requests are welcome!
 
-This is my first browser extension.
-I have very little experience with web development / JavaScript,
-and the initial version was hastily written.
+This is my first browser extension / userscript (originally, I wrote this as a Chrome extension).
+I have very little experience with web development / JavaScript.
 Clean up / refactoring contributions are therefore also quite welcome. 
  

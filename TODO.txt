@@ -1,5 +1,7 @@
 TODO:
-* prev/next nav does not respect custom ordering (need to apply same reordering to lightbox list)
+* Support the "lightbox carousel" (the popups when clicking on search results)
+ + apply custom sort to them (otherwise iterating through them is via original order, which is confusing)
+ + display my/avg rating
 * display toggles on all media pages
  + media upload views
  + lightbox views
@@ -27,3 +29,4 @@ Ideas of unclear difficulty:
 Known bugs:
 * breaks if there is absolutely no filter set (not even mediaType=photos)
 * sometimes updating filters doesn't add controls to results
+* seems a bit more glitchy on mobile
