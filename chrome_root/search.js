@@ -520,7 +520,7 @@ function observePageChanges() {
 			clearResults();
 			loadMoreResults();
 		});
-		filterSpanObserver.observe(span, {  characterData: true, attributes: false, childList: false, subtree: true });
+		filterSpanObserver.observe(element, {  characterData: true, attributes: false, childList: false, subtree: true });
 		filterSpanObservers.push(filterSpanObserver);
 	}
 
